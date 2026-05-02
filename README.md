@@ -1,100 +1,107 @@
-# Docker MCP Server
+# 🐳 Docker MCP Server
 
-TypeScript MCP server for inspecting and operating a Docker host through [FastMCP](https://github.com/punkpeye/fastmcp). It exposes a streamable HTTP MCP endpoint plus a password-protected WebUI for server status.
+[![Docker Build & Publish](https://github.com/keqing-pc/docker-mcp/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/keqing-pc/docker-mcp/actions/workflows/docker-publish.yml)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
+[![FastMCP](https://img.shields.io/badge/Built%20with-FastMCP-green.svg)](https://github.com/punkpeye/fastmcp)
 
-## What It Provides
+A high-performance [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that provides an interface for LLMs to manage and interact with a Docker host. Built with TypeScript and FastMCP, it offers deep inspection, lifecycle management, and interactive execution capabilities.
 
-- Docker container, image, inspect, logs, stats, create, run, exec, and shell tools
-- Enabled lifecycle tools for start, stop, restart, and remove
-- FastMCP over streamable HTTP
-- EJS monitoring dashboard
-- `.env`-based configuration
-- Health endpoint and protected WebUI routes
+---
 
-## Quick Start
+## ✨ Key Features
 
-```bash
-npm install
-cp .env.example .env
-npm run dev
+- **🚀 Full Lifecycle Management**: Create, run, start, stop, restart, and remove containers effortlessly.
+- **🐚 Interactive Execution**: Execute commands or full shell sessions inside running containers.
+- **📊 Real-time Monitoring**: Stream logs and capture one-shot stats for performance analysis.
+- **🛡️ Secure by Design**: Configurable image allowlists, mutation toggles, and password-protected WebUI.
+- **💎 Premium Dev Experience**: `keepAlive` mode for interactive containers—automatically injects `sleep infinity` and overrides custom entrypoints (e.g., `alpine/git`) to keep environments operational for LLM tasks.
+- **🖥️ Dashboard**: Built-in EJS-powered web interface for health monitoring and server status.
+
+---
+
+## 🛠️ Tools Provided
+
+| Tool | Description |
+| :--- | :--- |
+| `docker_ps` | List all containers (active or all). |
+| `docker_images` | List available images on the host. |
+| `docker_inspect` | Get detailed JSON metadata for any Docker object. |
+| `docker_logs` | Retrieve recent logs with tail and timestamp support. |
+| `docker_stats` | Get a resource usage snapshot. |
+| `docker_pull_image` | Pull new images from registries. |
+| `docker_run_container` | The Swiss army knife: Create and start containers with advanced options. |
+| `docker_exec_shell` | Run complex shell commands inside a container. |
+| `docker_remove_container`| Safely or forcefully remove containers. |
+
+---
+
+## 🚀 Quick Start
+
+### Local Development
+
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+
+2. **Configure Environment**:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your desired credentials
+   ```
+
+3. **Launch**:
+   ```bash
+   npm run dev
+   ```
+
+### Running with Docker Compose (Recommended)
+
+```yaml
+services:
+  docker-mcp:
+    image: ghcr.io/your-username/docker-mcp:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WEBUI_PASSWORD=your-secure-password
+      - WEBUI_SESSION_SECRET=your-secret-key
 ```
 
-Open these URLs locally:
-
-- MCP endpoint: `http://127.0.0.1:8080/mcp`
-- Health check: `http://127.0.0.1:8080/health`
-- WebUI dashboard: `http://127.0.0.1:8080/dashboard`
-
-## Environment Setup
-
-Update `.env` with at least:
-
 ```bash
-WEBUI_PASSWORD=your-password
-WEBUI_SESSION_SECRET=your-session-secret
+docker-compose up -d
 ```
 
-Available variables:
+---
 
-```bash
-HOST=127.0.0.1
-PORT=8080
-MCP_ENDPOINT=/mcp
-WEBUI_TITLE=Docker MCP Control Center
-WEBUI_PASSWORD=change-me
-WEBUI_SESSION_SECRET=replace-this-session-secret
-DOCKER_COMMAND=docker
-DOCKER_ENABLE_MUTATIONS=true
-DOCKER_ENABLE_CONTAINER_CREATE=true
-DOCKER_ENABLE_CONTAINER_EXEC=true
-DOCKER_ENABLE_SHELL_EXEC=true
-DOCKER_ALLOWED_IMAGES=*
-DOCKER_TIMEOUT_MS=30000
-DOCKER_EXEC_TIMEOUT_MS=30000
-```
+## ⚙️ Configuration
 
-`DOCKER_ALLOWED_IMAGES=*` lets the client create containers from any image. Replace it with a comma-separated allowlist, such as `node:22-alpine,python:3.12-alpine`, if you want to narrow that later.
+Control the server via environment variables:
 
-## Tools
+| Variable | Default | Description |
+| :--- | :--- | :--- |
+| `PORT` | `8080` | Server port. |
+| `DOCKER_ENABLE_MUTATIONS` | `true` | Allow destructive actions (stop, rm, etc). |
+| `DOCKER_ALLOWED_IMAGES` | `*` | Comma-separated list of allowed images. |
+| `WEBUI_PASSWORD` | `change-me` | Password for the dashboard. |
+| `DOCKER_TIMEOUT_MS` | `30000` | Default timeout for Docker operations. |
 
-- `docker_ps`: list containers
-- `docker_images`: list images
-- `docker_inspect`: inspect a Docker object
-- `docker_logs`: read recent container logs
-- `docker_stats`: read one-shot container stats
-- `docker_pull_image`: pull an image
-- `docker_create_container`: create a container from an image
-- `docker_run_container`: create and start a container from an image
-- `docker_exec`: execute an argv command inside a running container
-- `docker_exec_shell`: execute a shell command inside a running container
-- `docker_start`: start a container when mutations are enabled
-- `docker_stop`: stop a container when mutations are enabled
-- `docker_restart`: restart a container when mutations are enabled
-- `docker_remove_container`: remove a container when mutations are enabled
+---
 
-## Scripts
+## 🧪 The `keepAlive` Feature
 
-```bash
-npm run dev
-npm run start
-npm run build
-npm run check
-```
+When creating containers for LLM tasks, use `keepAlive: true`. This ensures that even images with specific entrypoints (like `alpine/git` which defaults to `git`) are overridden with a `sleep infinity` loop, allowing you to `exec` into them later without the container exiting immediately.
 
-## Docker
+---
 
-The container needs access to a Docker daemon. The common local setup mounts the host Docker socket:
+## 🔒 Security Note
 
-```bash
-docker build -t docker-mcp .
-docker run --rm \
-  -p 8080:8080 \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -e HOST=0.0.0.0 \
-  -e PORT=8080 \
-  -e WEBUI_PASSWORD=your-password \
-  -e WEBUI_SESSION_SECRET=your-session-secret \
-  docker-mcp
-```
+This server requires access to the Docker socket (`/var/run/docker.sock`). **Do not expose this server to the public internet without additional authentication layers.** It is intended for local use or within a secure, private network.
 
-Mounting the Docker socket grants broad control over the host Docker daemon. Keep the WebUI password strong and expose the server only to trusted networks.
+---
+
+## 📄 License
+
+MIT © 2024
