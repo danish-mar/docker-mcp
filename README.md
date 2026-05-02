@@ -1,6 +1,6 @@
 # 🐳 Docker MCP Server
 
-[![Docker Build & Publish](https://github.com/keqing-pc/docker-mcp/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/keqing-pc/docker-mcp/actions/workflows/docker-publish.yml)
+[![Docker Build & Publish](https://github.com/danish-mar/docker-mcp/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/danish-mar/docker-mcp/actions/workflows/docker-publish.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![FastMCP](https://img.shields.io/badge/Built%20with-FastMCP-green.svg)](https://github.com/punkpeye/fastmcp)
 
@@ -60,7 +60,7 @@ A high-performance [Model Context Protocol (MCP)](https://modelcontextprotocol.i
 ```yaml
 services:
   docker-mcp:
-    image: ghcr.io/your-username/docker-mcp:latest
+    image: ghcr.io/danish-mar/docker-mcp:latest
     ports:
       - "8080:8080"
     volumes:
